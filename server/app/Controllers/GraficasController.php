@@ -3,18 +3,23 @@
 namespace App\Controllers;
 
 use App\Models\SensorModel;
+use App\Models\ConfiguracionModel; // <--- ¡IMPORTANTE! Agregar esta línea
 
 class GraficasController extends BaseController
 {
     public function index()
     {
+        // 1. Obtener configuraciones (umbrales)
+        $configModel = new ConfiguracionModel();
+        $configs = $configModel->getAllAsArray();
+
+        // 2. Obtener datos de sensores (últimos 100 registros)
         $model = new SensorModel();
-        $limite = 100; // podemos mostrar más datos
+        $limite = 100;
 
         $registros = $model->orderBy('fecha', 'ASC')->limit($limite)->findAll();
 
         // Preparar datos para gráficas
-        $data = [];
         $data['fechas'] = array_map(function($row) {
             return $row['fecha_local'] ?? $row['fecha'];
         }, $registros);
@@ -25,9 +30,13 @@ class GraficasController extends BaseController
         $data['calidades'] = array_column($registros, 'calidad_aire');
         $data['indices'] = array_column($registros, 'indice');
 
-        // Datos para gráfica de barras (promedios diarios o por hora)
+        // Datos para gráfica de barras (promedios diarios)
         $data['promedios_diarios'] = $this->calcularPromediosDiarios($registros);
 
+        // 3. Agregar configuraciones a los datos que se pasan a la vista
+        $data['configs'] = $configs;
+
+        // 4. Un solo return view con todos los datos
         return view('graficas', $data);
     }
 
