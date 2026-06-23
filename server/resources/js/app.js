@@ -1,6 +1,9 @@
+// Importaciones necesarias
 import 'bootstrap';
 import '../css/app.css';
-import * as echarts from 'echarts';
 
-// Exponer echarts globalmente
-window.echarts = echarts;
+// Importar Chart.js
+import Chart from 'chart.js/auto';
+
+// Exponer Chart globalmente para usarlo en las vistas
+window.Chart = Chart;

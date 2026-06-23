@@ -6,7 +6,7 @@ use Config\Database;
 
 class DispositivoController extends BaseController
 {
-    // GET /api/dispositivo
+    // GET /api/dispositivo (para el dashboard)
     public function index()
     {
         $db = Database::connect();
@@ -16,6 +16,34 @@ class DispositivoController extends BaseController
                 ->setJSON(['status' => 'error', 'message' => 'Dispositivo no encontrado']);
         }
         return $this->response->setJSON($dispositivo);
+    }
+
+    // GET /dispositivo (vista detallada)
+    public function detalle()
+    {
+        $db = Database::connect();
+        $dispositivo = $db->table('dispositivo')->where('id', 1)->get()->getRowArray();
+
+        // Obtener historial de intensidad WiFi de las lecturas (últimos 50)
+        $historial = $db->table('lecturas')
+            ->select('fecha, estado_wifi')
+            ->orderBy('fecha', 'DESC')
+            ->limit(50)
+            ->get()
+            ->getResultArray();
+        // Invertir para orden ascendente
+        $historial = array_reverse($historial);
+
+        $data['dispositivo'] = $dispositivo;
+        $data['historial'] = $historial;
+        $data['fechas'] = array_map(function($row) {
+            return $row['fecha'];
+        }, $historial);
+        $data['estados'] = array_map(function($row) {
+            return $row['estado_wifi'] ? 1 : 0;
+        }, $historial);
+
+        return view('dispositivo', $data);
     }
 
     // POST /api/dispositivo/update

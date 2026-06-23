@@ -3,398 +3,555 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AeroNodo Básico - Dashboard IoT</title>
+    <title>AeroNodo Básico</title>
+
+    <!-- CSS generado por Vite (incluye Bootstrap y estilos personalizados) -->
     <link rel="stylesheet" href="<?= base_url('assets/app.css') ?>">
-    <style>
-        /* Estilos adicionales para la vista */
-        .card-header { background-color: #f8f9fa; }
-        .status-badge { font-size: 1rem; padding: 0.5rem 1rem; }
-        .alert-item { border-left: 4px solid #ffc107; margin-bottom: 0.5rem; padding-left: 1rem; }
-        .alert-item.critica { border-left-color: #dc3545; }
-        .alert-item.moderada { border-left-color: #ffc107; }
-        .alert-item.normal { border-left-color: #28a745; }
-        .gauge { width: 100%; height: 220px; }
-        .barras { width: 100%; max-width: 800px; height: 400px; margin: 0 auto; }
-        .lineas { width: 100%; max-width: 1000px; height: 400px; margin: 0 auto; }
-        .barras-recientes { width: 100%; max-width: 1200px; height: 450px; margin: 0 auto; }
-    </style>
+
+    <!-- Bootstrap Icons (se mantiene desde CDN para asegurar disponibilidad) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 </head>
 <body>
-    <div class="container-fluid py-4">
-        <!-- Encabezado -->
-        <div class="row mb-4">
-            <div class="col-12 text-center">
-                <h1 class="display-5 fw-bold">🌤️ AeroNodo Básico</h1>
-                <p class="lead">Monitoreo Ambiental IoT en tiempo real</p>
-            </div>
-        </div>
 
-        <!-- Último registro -->
-        <div class="alert alert-light border text-center my-3" role="alert">
-            <strong>Último registro:</strong> <span id="fecha_registro">Cargando...</span>
-        </div>
+<!-- ===== SIDEBAR ===== -->
+<?= view('components/sidebar') ?>
 
-        <!-- Estado del dispositivo -->
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">📶 Estado del Dispositivo</div>
-                    <div class="card-body">
-                        <p><strong>WiFi:</strong> <span id="estado_wifi" class="badge bg-secondary">Desconocido</span></p>
-                        <p><strong>Intensidad de señal:</strong> <span id="intensidad_wifi">--</span> dBm</p>
-                        <p><strong>Última actualización:</strong> <span id="ultima_actualizacion">--</span></p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">⚠️ Alertas Activas</div>
-                    <div class="card-body" id="alertas_container">
-                        <p class="text-muted">Cargando alertas...</p>
-                    </div>
-                </div>
-            </div>
-        </div>
+<!-- ===== MAIN ===== -->
+<div class="main">
 
-        <!-- Gauges -->
-        <div class="row g-2">
-            <div class="col-12 col-md-6 col-lg-2">
-                <div class="card text-center">
-                    <div class="card-header"><strong>Temperatura</strong></div>
-                    <div class="card-body">
-                        <div id="gauge_temperatura" class="gauge"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-md-6 col-lg-2">
-                <div class="card text-center">
-                    <div class="card-header"><strong>Humedad</strong></div>
-                    <div class="card-body">
-                        <div id="gauge_humedad" class="gauge"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-md-6 col-lg-2">
-                <div class="card text-center">
-                    <div class="card-header"><strong>Presión</strong></div>
-                    <div class="card-body">
-                        <div id="gauge_presion" class="gauge"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-md-6 col-lg-2">
-                <div class="card text-center">
-                    <div class="card-header"><strong>Calidad del Aire</strong></div>
-                    <div class="card-body">
-                        <div id="gauge_calidad" class="gauge"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-md-6 col-lg-2">
-                <div class="card text-center">
-                    <div class="card-header"><strong>Índice</strong></div>
-                    <div class="card-body">
-                        <div id="gauge_indice" class="gauge"></div>
-                    </div>
-                </div>
+    <!-- TOPBAR -->
+    <div class="topbar">
+        <div>
+            <h3>Dashboard</h3>
+            <small>Resumen general del entorno</small>
+        </div>
+        <div class="d-flex align-items-center gap-4">
+            <span id="topbar-status" class="status-online">● Conectado</span>
+            <i class="bi bi-wifi fs-4"></i>
+            <span id="topbar-datetime">--</span>
+            <div>
+                <i class="bi bi-person-circle fs-3"></i> Usuario
             </div>
         </div>
+    </div>
 
-        <!-- Gráficas -->
-        <div class="row g-2 mt-3">
-            <div class="col-12">
-                <div class="card text-center">
-                    <div class="card-header">Último Registro (Barras)</div>
-                    <div class="card-body">
-                        <div id="barras_ultimo" class="barras"></div>
-                    </div>
+    <!-- TARJETAS DE RESUMEN -->
+    <div class="row g-4">
+        <div class="col-md-2">
+            <div class="card-info">
+                <i class="bi bi-thermometer-half temp"></i>
+                <h6 class="mt-3">Temperatura</h6>
+                <h2 id="card-temp">-- °C</h2>
+                <span id="card-temp-status">--</span>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card-info">
+                <i class="bi bi-droplet-fill hum"></i>
+                <h6 class="mt-3">Humedad</h6>
+                <h2 id="card-hum">-- %</h2>
+                <span id="card-hum-status">--</span>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card-info">
+                <i class="bi bi-speedometer2 pres"></i>
+                <h6 class="mt-3">Presión</h6>
+                <h2 id="card-pres">--</h2>
+                <span>hPa</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card-info border border-warning">
+                <i class="bi bi-wind air"></i>
+                <h6 class="mt-3">Calidad del Aire</h6>
+                <h2 id="card-air">-- ppm</h2>
+                <span id="card-air-status" class="text-warning">--</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card-info border border-success">
+                <i class="bi bi-shield-check ok"></i>
+                <h6 class="mt-3">Estado del Sistema</h6>
+                <h2 id="card-sistema" class="text-success">--</h2>
+                <span id="card-sistema-sub">--</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- GRÁFICAS (Chart.js) -->
+    <div class="chart-card">
+        <div class="row">
+            <div class="col-md-3">
+                <canvas id="tempChart"></canvas>
+            </div>
+            <div class="col-md-3">
+                <canvas id="humChart"></canvas>
+            </div>
+            <div class="col-md-3">
+                <canvas id="airChart"></canvas>
+            </div>
+            <div class="col-md-3">
+                <canvas id="presChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- TABLA Y ALERTAS -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="table-card">
+                <h5>Últimos Registros</h5>
+                <div class="table-responsive mt-3">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Fecha</th>
+                                <th>Temp</th>
+                                <th>Hum</th>
+                                <th>Presión</th>
+                                <th>Aire</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-registros">
+                            <!-- Se llenará con JavaScript -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
-        <div class="row g-2 mt-3">
-            <div class="col-12">
-                <div class="card text-center">
-                    <div class="card-header">Historial (Líneas) - Últimos 15 registros</div>
-                    <div class="card-body">
-                        <div id="lineas_historial" class="lineas"></div>
-                    </div>
+        <div class="col-md-4">
+            <div class="alert-card">
+                <h5>Alertas Activas</h5>
+                <div id="alertas-container">
+                    <!-- Se llenará con JavaScript -->
                 </div>
             </div>
-        </div>
-        <div class="row g-2 mt-3">
-            <div class="col-12">
-                <div class="card text-center">
-                    <div class="card-header">Últimos 15 registros (Barras agrupadas)</div>
-                    <div class="card-body">
-                        <div id="barras_recientes" class="barras-recientes"></div>
-                    </div>
+
+            <div class="action-card">
+                <h5>Acciones</h5>
+                <div class="d-grid gap-3 mt-4">
+                    <button class="btn btn-primary" id="btn-exportar">
+                        <i class="bi bi-download"></i> Exportar Datos
+                    </button>
+                    <button class="btn btn-success" id="btn-actualizar">
+                        <i class="bi bi-arrow-repeat"></i> Actualizar Datos
+                    </button>
+                    <button class="btn btn-secondary" id="btn-filtrar">
+                        <i class="bi bi-calendar"></i> Filtrar por Fechas
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Scripts -->
-    <script type="module" src="<?= base_url('assets/app.js') ?>"></script>
-    <script>
-        // Aquí se escribe todo el código JavaScript para el dashboard
-        document.addEventListener('DOMContentLoaded', () => {
+    <footer>
+        AeroNodo Básico - Monitoreo Ambiental IoT | Versión 1.0
+    </footer>
+</div>
 
-            // 1. Inicialización de gráficas echarts
-            const fechaRegistro = document.getElementById('fecha_registro');
-            const estadoWifiSpan = document.getElementById('estado_wifi');
-            const intensidadWifiSpan = document.getElementById('intensidad_wifi');
-            const ultimaActualizacionSpan = document.getElementById('ultima_actualizacion');
-            const alertasContainer = document.getElementById('alertas_container');
+<!-- ===== SCRIPTS ===== -->
+<!-- Script principal generado por Vite -->
+<script type="module" src="<?= base_url('assets/app.js') ?>"></script>
 
-            // Gauges
-            const tempGauge = window.echarts.init(document.getElementById('gauge_temperatura'));
-            const humGauge = window.echarts.init(document.getElementById('gauge_humedad'));
-            const presGauge = window.echarts.init(document.getElementById('gauge_presion'));
-            const calGauge = window.echarts.init(document.getElementById('gauge_calidad'));
-            const indGauge = window.echarts.init(document.getElementById('gauge_indice'));
+<!-- Script específico del dashboard -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
 
-            // Barras último
-            const barUltimo = window.echarts.init(document.getElementById('barras_ultimo'));
+        // ---- Variables para las gráficas ----
+        const chartColors = {
+            temp: '#ef4444',
+            hum: '#2563eb',
+            air: '#16a34a',
+            pres: '#9333ea'
+        };
 
-            // Líneas historial
-            const lineChart = window.echarts.init(document.getElementById('lineas_historial'));
+        // Inicializar gráficas Chart.js
+        const ctxTemp = document.getElementById('tempChart').getContext('2d');
+        const ctxHum = document.getElementById('humChart').getContext('2d');
+        const ctxAir = document.getElementById('airChart').getContext('2d');
+        const ctxPres = document.getElementById('presChart').getContext('2d');
 
-            // Barras recientes
-            const barRecientes = window.echarts.init(document.getElementById('barras_recientes'));
+        // Etiquetas iniciales (se actualizarán)
+        const labels = ['--', '--', '--', '--', '--', '--'];
 
-            // 2. Configuración inicial de los gauges (se actualizarán dinámicamente)
-            const gaugeOptionTemplate = (title, unit, max, color) => ({
-                series: [{
-                    type: 'gauge',
-                    center: ['50%', '65%'],
-                    startAngle: 200,
-                    endAngle: -20,
-                    min: 0,
-                    max: max,
-                    splitNumber: 10,
-                    itemStyle: { color: color },
-                    progress: { show: true, width: 30 },
-                    pointer: { show: false },
-                    axisLine: { lineStyle: { width: 30 } },
-                    axisTick: { distance: -45, splitNumber: 5, lineStyle: { width: 2, color: '#999' } },
-                    splitLine: { distance: -52, length: 14, lineStyle: { width: 3, color: '#999' } },
-                    axisLabel: { distance: -20, color: '#999', fontSize: 16 },
-                    anchor: { show: false },
-                    title: { show: false },
-                    detail: {
-                        valueAnimation: true,
-                        width: '60%',
-                        lineHeight: 40,
-                        borderRadius: 8,
-                        offsetCenter: [0, '50%'],
-                        fontSize: 32,
-                        fontWeight: 'bolder',
-                        formatter: `{value} ${unit}`,
-                        color: 'inherit'
-                    },
-                    data: [{ value: 0 }]
+        const commonOptions = {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: { enabled: true }
+            },
+            scales: {
+                y: { beginAtZero: true }
+            },
+            elements: {
+                point: { radius: 2 }
+            }
+        };
+
+        const tempChart = new Chart(ctxTemp, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Temperatura',
+                    data: [0, 0, 0, 0, 0, 0],
+                    borderColor: chartColors.temp,
+                    backgroundColor: chartColors.temp + '33',
+                    fill: true,
+                    tension: 0.1
                 }]
-            });
+            },
+            options: commonOptions
+        });
 
-            tempGauge.setOption(gaugeOptionTemplate('Temperatura', '°C', 50, '#FFAB91'));
-            humGauge.setOption(gaugeOptionTemplate('Humedad', '%', 100, '#91E5FF'));
-            presGauge.setOption(gaugeOptionTemplate('Presión', 'hPa', 1100, '#B39DDB'));
-            calGauge.setOption(gaugeOptionTemplate('Calidad Aire', 'ppm', 1000, '#FFD54F'));
-            indGauge.setOption(gaugeOptionTemplate('Índice', '', 100, '#A5D6A7'));
-
-            // 3. Gráfica de barras del último registro (5 variables)
-            barUltimo.setOption({
-                title: { text: 'Último Registro' },
-                xAxis: { data: ['Temp', 'Hum', 'Pres', 'Calidad', 'Índice'] },
-                yAxis: {},
-                animationDurationUpdate: 500,
-                series: [{
-                    name: 'Valores',
-                    type: 'bar',
-                    data: [0, 0, 0, 0, 0]
+        const humChart = new Chart(ctxHum, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Humedad',
+                    data: [0, 0, 0, 0, 0, 0],
+                    borderColor: chartColors.hum,
+                    backgroundColor: chartColors.hum + '33',
+                    fill: true,
+                    tension: 0.1
                 }]
-            });
+            },
+            options: commonOptions
+        });
 
-            // 4. Gráfica de líneas del historial (15 registros)
-            lineChart.setOption({
-                title: { text: 'Historial de Registros' },
-                tooltip: { trigger: 'axis' },
-                legend: { data: ['Temperatura', 'Humedad', 'Presión', 'Calidad', 'Índice'] },
-                xAxis: { type: 'category', data: [] },
-                yAxis: { type: 'value' },
-                series: [
-                    { name: 'Temperatura', data: [], type: 'line' },
-                    { name: 'Humedad', data: [], type: 'line' },
-                    { name: 'Presión', data: [], type: 'line' },
-                    { name: 'Calidad', data: [], type: 'line' },
-                    { name: 'Índice', data: [], type: 'line' }
-                ]
-            });
+        const airChart = new Chart(ctxAir, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Calidad Aire',
+                    data: [0, 0, 0, 0, 0, 0],
+                    borderColor: chartColors.air,
+                    backgroundColor: chartColors.air + '33',
+                    fill: true,
+                    tension: 0.1
+                }]
+            },
+            options: commonOptions
+        });
 
-            // 5. Gráfica de barras recientes (15 registros agrupados)
-            barRecientes.setOption({
-                title: { text: 'Últimos 15 registros' },
-                tooltip: { trigger: 'axis' },
-                legend: { data: ['Temperatura', 'Humedad', 'Presión', 'Calidad', 'Índice'] },
-                xAxis: { type: 'category', data: [], axisLabel: { rotate: 45 } },
-                yAxis: { type: 'value' },
-                series: [
-                    { name: 'Temperatura', type: 'bar', data: [] },
-                    { name: 'Humedad', type: 'bar', data: [] },
-                    { name: 'Presión', type: 'bar', data: [] },
-                    { name: 'Calidad', type: 'bar', data: [] },
-                    { name: 'Índice', type: 'bar', data: [] }
-                ]
-            });
+        const presChart = new Chart(ctxPres, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Presión',
+                    data: [0, 0, 0, 0, 0, 0],
+                    borderColor: chartColors.pres,
+                    backgroundColor: chartColors.pres + '33',
+                    fill: true,
+                    tension: 0.1
+                }]
+            },
+            options: commonOptions
+        });
 
-            // 6. Función fetchUltimo
-            async function fetchUltimo() {
-                try {
-                    const response = await fetch('/sensores/ultimo');
-                    if (!response.ok) throw new Error('Error en el servidor');
-                    const data = await response.json();
+        // ---- Funciones de actualización ----
 
-                    // Actualizar fecha
-                    fechaRegistro.textContent = data.fecha_local || data.fecha;
+        // 1. Obtener último registro y actualizar tarjetas
+        async function fetchUltimo() {
+            try {
+                const resp = await fetch('/sensores/ultimo');
+                if (!resp.ok) throw new Error('Error al obtener último registro');
+                const data = await resp.json();
 
-                    // Actualizar gauges
-                    const temp = parseFloat(data.temperatura) || 0;
-                    const hum = parseFloat(data.humedad) || 0;
-                    const pres = parseFloat(data.presion) || 0;
-                    const cal = parseInt(data.calidad_aire) || 0;
-                    const ind = parseFloat(data.indice) || 0;
+                const temp = parseFloat(data.temperatura) || 0;
+                const hum = parseFloat(data.humedad) || 0;
+                const pres = parseFloat(data.presion) || 0;
+                const air = parseInt(data.calidad_aire) || 0;
+                const indice = parseFloat(data.indice) || 0;
 
-                    tempGauge.setOption({ series: [{ data: [{ value: temp }] }] });
-                    humGauge.setOption({ series: [{ data: [{ value: hum }] }] });
-                    presGauge.setOption({ series: [{ data: [{ value: pres }] }] });
-                    calGauge.setOption({ series: [{ data: [{ value: cal }] }] });
-                    indGauge.setOption({ series: [{ data: [{ value: ind }] }] });
+                // Tarjetas
+                document.getElementById('card-temp').textContent = temp.toFixed(1) + ' °C';
+                document.getElementById('card-hum').textContent = hum.toFixed(1) + ' %';
+                document.getElementById('card-pres').textContent = pres.toFixed(1);
+                document.getElementById('card-air').textContent = air + ' ppm';
 
-                    // Actualizar barras último
-                    barUltimo.setOption({
-                        series: [{ data: [temp, hum, pres, cal, ind] }]
-                    });
+                // Estados (clasificación simple)
+                const tempStatus = temp < 15 ? 'Baja' : (temp > 30 ? 'Alta' : 'Normal');
+                const humStatus = hum < 40 ? 'Baja' : (hum > 70 ? 'Alta' : 'Normal');
+                const airStatus = air <= 500 ? 'Normal' : (air <= 800 ? 'Moderado' : 'Crítico');
 
-                } catch (error) {
-                    console.error('Error fetchUltimo:', error);
-                }
+                document.getElementById('card-temp-status').textContent = tempStatus;
+                document.getElementById('card-temp-status').className = tempStatus === 'Normal' ? 'text-success' : (tempStatus === 'Alta' ? 'text-danger' : 'text-warning');
+                document.getElementById('card-hum-status').textContent = humStatus;
+                document.getElementById('card-hum-status').className = humStatus === 'Normal' ? 'text-success' : (humStatus === 'Alta' ? 'text-danger' : 'text-warning');
+                document.getElementById('card-air-status').textContent = airStatus;
+                document.getElementById('card-air-status').className = airStatus === 'Normal' ? 'text-success' : (airStatus === 'Moderado' ? 'text-warning' : 'text-danger');
+
+                // Estado del sistema (basado en conectividad)
+                const wifiOk = data.estado_wifi === true || data.estado_wifi === 1;
+                document.getElementById('card-sistema').textContent = wifiOk ? 'Operativo' : 'Desconectado';
+                document.getElementById('card-sistema').className = wifiOk ? 'text-success' : 'text-danger';
+                document.getElementById('card-sistema-sub').textContent = wifiOk ? 'Todo en orden' : 'Revisar conexión';
+
+            } catch (error) {
+                console.error('Error en fetchUltimo:', error);
             }
+        }
 
-            // 7. Función fetchRecientes (15 últimos)
-            async function fetchRecientes() {
-                try {
-                    const response = await fetch('/sensores/recientes/15');
-                    if (!response.ok) throw new Error('Error en el servidor');
-                    const data = await response.json();
-                    if (!Array.isArray(data) || data.length === 0) {
-                        console.warn('No hay datos recientes');
-                        return;
-                    }
+        // 2. Obtener recientes (15) para tabla y gráficas
+        async function fetchRecientes() {
+            try {
+                const resp = await fetch('/sensores/recientes/15');
+                if (!resp.ok) throw new Error('Error al obtener recientes');
+                const data = await resp.json();
 
-                    const fechas = data.map(item => item.fecha_local ? item.fecha_local.substring(11, 19) : item.fecha.substring(11, 19));
-                    const temps = data.map(item => parseFloat(item.temperatura) || 0);
-                    const hums = data.map(item => parseFloat(item.humedad) || 0);
-                    const pres = data.map(item => parseFloat(item.presion) || 0);
-                    const cals = data.map(item => parseInt(item.calidad_aire) || 0);
-                    const inds = data.map(item => parseFloat(item.indice) || 0);
+                // Actualizar tabla (mostrar últimos 5)
+                const tbody = document.getElementById('tabla-registros');
+                tbody.innerHTML = '';
+                const mostrar = data.slice(-5).reverse(); // los más recientes primero
+                mostrar.forEach((row, index) => {
+                    const tr = document.createElement('tr');
+                    const fecha = row.fecha_local ? row.fecha_local : row.fecha;
+                    tr.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>${fecha}</td>
+                        <td>${parseFloat(row.temperatura).toFixed(1)}</td>
+                        <td>${parseFloat(row.humedad).toFixed(1)}</td>
+                        <td>${parseFloat(row.presion).toFixed(1)}</td>
+                        <td>${parseInt(row.calidad_aire)}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
 
-                    // Líneas
-                    lineChart.setOption({
-                        xAxis: { data: fechas },
-                        series: [
-                            { name: 'Temperatura', data: temps },
-                            { name: 'Humedad', data: hums },
-                            { name: 'Presión', data: pres },
-                            { name: 'Calidad', data: cals },
-                            { name: 'Índice', data: inds }
-                        ]
-                    });
+                // Actualizar gráficas: usar los últimos 6 puntos (o todos si son menos)
+                const puntos = data.length >= 6 ? data.slice(-6) : data;
+                const labels = puntos.map(item => {
+                    const fecha = item.fecha_local ? item.fecha_local : item.fecha;
+                    return fecha.substring(11, 16); // HH:MM
+                });
 
-                    // Barras recientes
-                    barRecientes.setOption({
-                        xAxis: { data: fechas },
-                        series: [
-                            { name: 'Temperatura', data: temps },
-                            { name: 'Humedad', data: hums },
-                            { name: 'Presión', data: pres },
-                            { name: 'Calidad', data: cals },
-                            { name: 'Índice', data: inds }
-                        ]
-                    });
+                const temps = puntos.map(item => parseFloat(item.temperatura) || 0);
+                const hums = puntos.map(item => parseFloat(item.humedad) || 0);
+                const airs = puntos.map(item => parseInt(item.calidad_aire) || 0);
+                const pres = puntos.map(item => parseFloat(item.presion) || 0);
 
-                } catch (error) {
-                    console.error('Error fetchRecientes:', error);
-                }
+                // Actualizar datasets
+                tempChart.data.labels = labels;
+                tempChart.data.datasets[0].data = temps;
+                tempChart.update();
+
+                humChart.data.labels = labels;
+                humChart.data.datasets[0].data = hums;
+                humChart.update();
+
+                airChart.data.labels = labels;
+                airChart.data.datasets[0].data = airs;
+                airChart.update();
+
+                presChart.data.labels = labels;
+                presChart.data.datasets[0].data = pres;
+                presChart.update();
+
+            } catch (error) {
+                console.error('Error en fetchRecientes:', error);
             }
+        }
 
-            // 8. Función fetchEstado
-            async function fetchEstado() {
-                try {
-                    const response = await fetch('/api/dispositivo');
-                    if (!response.ok) throw new Error('Error al obtener estado');
-                    const data = await response.json();
+        // 3. Obtener estado del dispositivo (sidebar y topbar)
+        async function fetchEstado() {
+            try {
+                const resp = await fetch('/api/dispositivo');
+                if (!resp.ok) throw new Error('Error al obtener estado');
+                const data = await resp.json();
 
-                    const conectado = data.estado_wifi ? 'Conectado' : 'Desconectado';
-                    const badgeClass = data.estado_wifi ? 'bg-success' : 'bg-danger';
-                    estadoWifiSpan.textContent = conectado;
-                    estadoWifiSpan.className = `badge ${badgeClass}`;
-                    intensidadWifiSpan.textContent = data.intensidad_wifi ?? '--';
-                    ultimaActualizacionSpan.textContent = data.ultima_actualizacion || '--';
-                } catch (error) {
-                    console.error('Error fetchEstado:', error);
+                const wifi = data.estado_wifi === true || data.estado_wifi === 1;
+                const intensidad = data.intensidad_wifi || 0;
+                const ultima = data.ultima_actualizacion || '--';
+
+                // Sidebar
+                document.getElementById('sidebar-wifi').innerHTML = wifi ? '🟢 WiFi: Conectado' : '🔴 WiFi: Desconectado';
+                document.getElementById('sidebar-api').innerHTML = wifi ? '🟢 API: OK' : '🔴 API: Sin conexión';
+                document.getElementById('sidebar-fecha').textContent = ultima;
+
+                // Topbar
+                const statusSpan = document.getElementById('topbar-status');
+                if (wifi) {
+                    statusSpan.textContent = '● Conectado';
+                    statusSpan.className = 'status-online';
+                } else {
+                    statusSpan.textContent = '● Desconectado';
+                    statusSpan.className = 'status-offline';
                 }
-            }
 
-            // 9. Función fetchAlertas
-            async function fetchAlertas() {
-                try {
-                    const response = await fetch('/api/alertas');
-                    if (!response.ok) throw new Error('Error al obtener alertas');
-                    const data = await response.json();
-                    if (data.length === 0) {
-                        alertasContainer.innerHTML = '<p class="text-muted">No hay alertas activas</p>';
-                        return;
-                    }
-                    let html = '';
-                    data.forEach(alerta => {
-                        const nivel = alerta.nivel || 'normal';
-                        const clase = nivel === 'critica' ? 'critica' : (nivel === 'moderada' ? 'moderada' : 'normal');
-                        html += `<div class="alert-item ${clase}">
-                                    <strong>${nivel.toUpperCase()}</strong> - ${alerta.valor_detectado} ppm
-                                    <br><small>${alerta.fecha}</small>
-                                </div>`;
-                    });
-                    alertasContainer.innerHTML = html;
-                } catch (error) {
-                    console.error('Error fetchAlertas:', error);
+                // También actualizar el estado del sistema en tarjetas (aunque fetchUltimo ya lo hace)
+                const sistema = document.getElementById('card-sistema');
+                const sub = document.getElementById('card-sistema-sub');
+                if (wifi) {
+                    sistema.textContent = 'Operativo';
+                    sistema.className = 'text-success';
+                    sub.textContent = 'Todo en orden';
+                } else {
+                    sistema.textContent = 'Desconectado';
+                    sistema.className = 'text-danger';
+                    sub.textContent = 'Revisar conexión';
                 }
-            }
 
-            // 10. Redimensionar gráficas al cambiar ventana
-            window.addEventListener('resize', () => {
-                tempGauge.resize();
-                humGauge.resize();
-                presGauge.resize();
-                calGauge.resize();
-                indGauge.resize();
-                barUltimo.resize();
-                lineChart.resize();
-                barRecientes.resize();
+            } catch (error) {
+                console.error('Error en fetchEstado:', error);
+            }
+        }
+
+        // 4. Obtener alertas activas
+        async function fetchAlertas() {
+            try {
+                const resp = await fetch('/api/alertas');
+                if (!resp.ok) throw new Error('Error al obtener alertas');
+                const data = await resp.json();
+
+                const container = document.getElementById('alertas-container');
+                container.innerHTML = '';
+
+                if (data.length === 0) {
+                    container.innerHTML = '<p class="text-muted">No hay alertas activas</p>';
+                    return;
+                }
+
+                data.forEach(alerta => {
+                    const nivel = alerta.nivel || 'normal';
+                    const clase = nivel === 'critica' ? 'alert-danger-custom' : (nivel === 'moderada' ? 'alert-warning-custom' : 'alert-success-custom');
+                    const div = document.createElement('div');
+                    div.className = `alert-item ${clase}`;
+                    div.innerHTML = `
+                        <strong>${nivel.charAt(0).toUpperCase() + nivel.slice(1)}</strong>
+                        <br>
+                        Valor: ${alerta.valor_detectado} ${alerta.unidad || ''}
+                        <br><small>${alerta.fecha}</small>
+                    `;
+                    container.appendChild(div);
+                });
+
+            } catch (error) {
+                console.error('Error en fetchAlertas:', error);
+            }
+        }
+
+        // 5. Actualizar reloj en la topbar
+        function updateClock() {
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('es-MX', {
+                day: '2-digit', month: '2-digit', year: 'numeric'
             });
+            const timeStr = now.toLocaleTimeString('es-MX', {
+                hour: '2-digit', minute: '2-digit', second: '2-digit'
+            });
+            document.getElementById('topbar-datetime').textContent = `${dateStr} ${timeStr}`;
+        }
 
-            // 11. Ejecutar funciones e intervalos
+        // 6. Función de actualización completa
+        function refreshAll() {
             fetchUltimo();
             fetchRecientes();
             fetchEstado();
             fetchAlertas();
+        }
 
-            setInterval(() => {
-                fetchUltimo();
-                fetchRecientes();
-                fetchEstado();
-                fetchAlertas();
-            }, 5000);
+        // ---- Configuración inicial y temporizadores ----
+
+        // Reloj (actualiza cada segundo)
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Carga inicial de datos
+        refreshAll();
+
+        // Actualización automática cada 5 segundos
+        setInterval(refreshAll, 5000);
+
+        // Botón "Actualizar Datos"
+        document.getElementById('btn-actualizar').addEventListener('click', function () {
+            refreshAll();
+            // Pequeño feedback visual
+            this.innerHTML = '<i class="bi bi-arrow-repeat"></i> Actualizando...';
+            setTimeout(() => {
+                this.innerHTML = '<i class="bi bi-arrow-repeat"></i> Actualizar Datos';
+            }, 1000);
         });
-    </script>
+
+        // ===== Botón Exportar Datos (actualizado) =====
+        document.getElementById('btn-exportar').addEventListener('click', function() {
+            window.location.href = '<?= base_url('dashboard/exportar') ?>';
+        });
+
+        // ===== Botón Filtrar por Fechas (actualizado) =====
+        document.getElementById('btn-filtrar').addEventListener('click', function() {
+            // Crear modal dinámicamente
+            const modalHtml = `
+                <div class="modal fade" id="modalFiltrar" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title"><i class="bi bi-calendar"></i> Filtrar por Fechas</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <label>Desde</label>
+                                    <input type="date" id="filtro-desde" class="form-control">
+                                </div>
+                                <div class="mb-3">
+                                    <label>Hasta</label>
+                                    <input type="date" id="filtro-hasta" class="form-control">
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                <button class="btn btn-primary" id="btn-aplicar-filtro">Aplicar filtro</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Eliminar modal existente si hay
+            const oldModal = document.getElementById('modalFiltrar');
+            if (oldModal) oldModal.remove();
+
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            const modal = new bootstrap.Modal(document.getElementById('modalFiltrar'));
+            modal.show();
+
+            document.getElementById('btn-aplicar-filtro').addEventListener('click', function() {
+                const desde = document.getElementById('filtro-desde').value;
+                const hasta = document.getElementById('filtro-hasta').value;
+                if (!desde && !hasta) {
+                    alert('Selecciona al menos una fecha');
+                    return;
+                }
+                // Redirigir a historial con filtros
+                let url = '<?= base_url('historial') ?>?';
+                if (desde) url += 'desde=' + desde + '&';
+                if (hasta) url += 'hasta=' + hasta;
+                window.location.href = url;
+            });
+        });
+
+        // ---- Estilos dinámicos para el estado offline ----
+        // Añadir clase de estilo para estado offline
+        const style = document.createElement('style');
+        style.textContent = `
+            .status-offline {
+                color: #dc3545;
+                font-weight: bold;
+            }
+            .alert-danger-custom {
+                background: #fef2f2;
+                border-left: 5px solid #ef4444;
+            }
+        `;
+        document.head.appendChild(style);
+
+    });
+</script>
 </body>
 </html>
