@@ -35,7 +35,7 @@
         </div>
     </div>
 
-    <!-- TARJETAS DE RESUMEN -->
+    <!-- TARJETAS DE RESUMEN (orden: Temp, Hum, Pres, Calidad, Sistema) -->
     <div class="row g-4">
         <div class="col-md-2">
             <div class="card-info">
@@ -79,20 +79,36 @@
         </div>
     </div>
 
-    <!-- GRÁFICAS (Chart.js) -->
+    <!-- GRÁFICAS (orden: Temp → Hum → Pres → Calidad) -->
     <div class="chart-card">
         <div class="row">
+            <!-- Temperatura -->
             <div class="col-md-3">
+                <div class="text-center mb-1">
+                    <span class="badge bg-danger">🌡️ Temperatura</span>
+                </div>
                 <canvas id="tempChart"></canvas>
             </div>
+            <!-- Humedad -->
             <div class="col-md-3">
+                <div class="text-center mb-1">
+                    <span class="badge bg-primary">💧 Humedad</span>
+                </div>
                 <canvas id="humChart"></canvas>
             </div>
+            <!-- Presión -->
             <div class="col-md-3">
-                <canvas id="airChart"></canvas>
-            </div>
-            <div class="col-md-3">
+                <div class="text-center mb-1">
+                    <span class="badge bg-purple">📊 Presión</span>
+                </div>
                 <canvas id="presChart"></canvas>
+            </div>
+            <!-- Calidad del Aire -->
+            <div class="col-md-3">
+                <div class="text-center mb-1">
+                    <span class="badge bg-success">🌬️ Calidad Aire</span>
+                </div>
+                <canvas id="airChart"></canvas>
             </div>
         </div>
     </div>
@@ -167,11 +183,11 @@
             pres: '#9333ea'
         };
 
-        // Inicializar gráficas Chart.js
+        // Inicializar gráficas en el nuevo orden: Temp, Hum, Pres, Air
         const ctxTemp = document.getElementById('tempChart').getContext('2d');
         const ctxHum = document.getElementById('humChart').getContext('2d');
-        const ctxAir = document.getElementById('airChart').getContext('2d');
         const ctxPres = document.getElementById('presChart').getContext('2d');
+        const ctxAir = document.getElementById('airChart').getContext('2d');
 
         // Etiquetas iniciales (se actualizarán)
         const labels = ['--', '--', '--', '--', '--', '--'];
@@ -223,22 +239,6 @@
             options: commonOptions
         });
 
-        const airChart = new Chart(ctxAir, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Calidad Aire',
-                    data: [0, 0, 0, 0, 0, 0],
-                    borderColor: chartColors.air,
-                    backgroundColor: chartColors.air + '33',
-                    fill: true,
-                    tension: 0.1
-                }]
-            },
-            options: commonOptions
-        });
-
         const presChart = new Chart(ctxPres, {
             type: 'line',
             data: {
@@ -248,6 +248,22 @@
                     data: [0, 0, 0, 0, 0, 0],
                     borderColor: chartColors.pres,
                     backgroundColor: chartColors.pres + '33',
+                    fill: true,
+                    tension: 0.1
+                }]
+            },
+            options: commonOptions
+        });
+
+        const airChart = new Chart(ctxAir, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Calidad Aire',
+                    data: [0, 0, 0, 0, 0, 0],
+                    borderColor: chartColors.air,
+                    backgroundColor: chartColors.air + '33',
                     fill: true,
                     tension: 0.1
                 }]
@@ -333,10 +349,10 @@
 
                 const temps = puntos.map(item => parseFloat(item.temperatura) || 0);
                 const hums = puntos.map(item => parseFloat(item.humedad) || 0);
-                const airs = puntos.map(item => parseInt(item.calidad_aire) || 0);
                 const pres = puntos.map(item => parseFloat(item.presion) || 0);
+                const airs = puntos.map(item => parseInt(item.calidad_aire) || 0);
 
-                // Actualizar datasets
+                // Actualizar datasets en el nuevo orden: temp, hum, pres, air
                 tempChart.data.labels = labels;
                 tempChart.data.datasets[0].data = temps;
                 tempChart.update();
@@ -345,13 +361,13 @@
                 humChart.data.datasets[0].data = hums;
                 humChart.update();
 
-                airChart.data.labels = labels;
-                airChart.data.datasets[0].data = airs;
-                airChart.update();
-
                 presChart.data.labels = labels;
                 presChart.data.datasets[0].data = pres;
                 presChart.update();
+
+                airChart.data.labels = labels;
+                airChart.data.datasets[0].data = airs;
+                airChart.update();
 
             } catch (error) {
                 console.error('Error en fetchRecientes:', error);
@@ -536,8 +552,7 @@
             });
         });
 
-        // ---- Estilos dinámicos para el estado offline ----
-        // Añadir clase de estilo para estado offline
+        // ---- Estilos dinámicos ----
         const style = document.createElement('style');
         style.textContent = `
             .status-offline {
@@ -548,10 +563,15 @@
                 background: #fef2f2;
                 border-left: 5px solid #ef4444;
             }
+            .bg-purple {
+                background-color: #9333ea;
+                color: white;
+            }
         `;
         document.head.appendChild(style);
 
     });
 </script>
+
 </body>
 </html>
